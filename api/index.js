@@ -33,15 +33,7 @@ app.post('/api/extract', async (req, res) => {
     const finalApiKey = customApiKey || apiKey;
 
     if (!finalApiKey) {
-      // Mock data for demo purposes if no API key is provided
-      console.log('No ANTHROPIC_API_KEY provided. Using mock data for extraction.');
-      return res.json({
-        company: "MockInc",
-        domain: "stripe.com",  // Using a real domain so MX resolves
-        founders: [
-          { first: "John", middle: "A", last: "Smith" }
-        ]
-      });
+      return res.status(401).json({ error: 'Configure API key to use AI Extract mode.' });
     }
 
     const prompt = `Extract the company name, domain, and a list of key people from the following text.
