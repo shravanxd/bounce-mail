@@ -396,8 +396,8 @@ export default function App() {
                         ? `Root server for ${data.domain} is Catch-All. It accepts all incoming addresses, so we cannot definitively confirm this specific email.`
                         : `Root server for ${data.domain} is Catch-All. Manual verification required. Showing generated paths.` 
                       : mode === 'single'
-                        ? `Standard SMTP checks blocked for ${data.domain}. Cannot verify.`
-                        : `Standard SMTP checks blocked for ${data.domain}. Showing theoretical paths.`}
+                        ? `Outbound Port 25 is blocked by your local ISP or Cloud Provider. Cannot directly verify ${data.domain}.`
+                        : `Outbound Port 25 blocked by host ISP. Cannot interact with ${data.domain}. Showing theoretical paths.`}
                   </p>
                 </div>
               )}
