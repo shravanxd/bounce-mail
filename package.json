@@ -1,5 +1,7 @@
 {
-  "name": "client",
+  "name": "bouncemail",
+  "description": "An open-source AI-assisted email verifier",
+  "license": "MIT",
   "private": true,
   "version": "0.0.0",
   "type": "module",
