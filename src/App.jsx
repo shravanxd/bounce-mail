@@ -394,10 +394,10 @@ export default function App() {
                     {catchAll 
                       ? mode === 'single'
                         ? `Root server for ${data.domain} is Catch-All. It accepts all incoming addresses, so we cannot definitively confirm this specific email.`
-                        : `Root server for ${data.domain} is Catch-All. Manual verification required. Showing generated paths.` 
+                        : `Root server for ${data.domain} is Catch-All. Manual verification required. Showing generated paths.`
                       : mode === 'single'
-                        ? `Outbound Port 25 is blocked by your local ISP or Cloud Provider. Cannot directly verify ${data.domain}.`
-                        : `Outbound Port 25 blocked by host ISP. Cannot interact with ${data.domain}. Showing theoretical paths.`}
+                        ? `Email Verification API Key missing or port blocked. Cannot directly verify ${data.domain}.`
+                        : `Email Verification API Key missing or port blocked. Showing theoretical paths.`}
                   </p>
                 </div>
               )}

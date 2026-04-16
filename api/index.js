@@ -151,51 +151,36 @@ const generatePermutations = (founder, domain) => {
 
 // Check if a specific email is valid via SMTP
 const checkEmailSMTP = async (email, mxRecord) => {
-  return new Promise((resolve) => {
-    let responded = false;
-    const socket = new net.Socket();
-    
-    // 8-second timeout
-    socket.setTimeout(8000);
-    
-    const pass = (res) => {
-      if (!responded) { responded = true; socket.destroy(); resolve(res); }
-    };
+  // Option 1: Temporary API Bypass over HTTPS
+  const apiKey = process.env.EMAIL_VALIDATION_API_KEY;
+  
+  if (!apiKey) {
+    // If no key provided yet, simulate a fallback mock response so the UI doesn't crash
+    console.log(`[Mock Info] Would verify ${email} via HTTPS... Please set EMAIL_VALIDATION_API_KEY in .env`);
+    return new Promise((resolve) => setTimeout(() => resolve('blocked'), 800));
+  }
 
-    let step = 0;
-    
-    socket.on('data', (data) => {
-      const msg = data.toString();
-      const code = parseInt(msg.substring(0, 3));
-      
-      if (step === 0 && code === 220) {
-        socket.write(`EHLO my-validator.local\r\n`);
-        step++;
-      } else if (step === 1 && code === 250) {
-        socket.write(`MAIL FROM:<hello@my-validator.local>\r\n`);
-        step++;
-      } else if (step === 2 && code === 250) {
-        socket.write(`RCPT TO:<${email}>\r\n`);
-        step++;
-      } else if (step === 3) {
-        if (code === 250) {
-          pass('valid');
-        } else if (code >= 500 && code < 600) {
-          pass('invalid');
-        } else {
-          pass('unknown');
-        }
-      } else if (code >= 400 && code < 600 && step < 3) {
-         // Some block or error on connection/ehlo
-         pass('blocked');
-      }
-    });
+  try {
+    // Using Abstract API's Free Email Validation endpoint (No credit card needed)
+    // You can sign up here: https://app.abstractapi.com/api/email-validation/pricing
+    const url = `https://emailvalidation.abstractapi.com/v1/?api_key=${apiKey}&email=${email}`;
+    const response = await fetch(url);
+    const data = await response.json();
 
-    socket.on('error', () => pass('error'));
-    socket.on('timeout', () => pass('timeout'));
-
-    socket.connect(25, mxRecord);
-  });
+    // Map Abstract API's "deliverability" to our existing statuses
+    if (data.deliverability === 'DELIVERABLE') {
+      return 'valid';
+    } else if (data.deliverability === 'UNDELIVERABLE') {
+      return 'invalid';
+    } else if (data.is_catchall_email && data.is_catchall_email.value) {
+      return 'catch-all';
+    } else {
+      return 'unknown';
+    }
+  } catch (error) {
+    console.error('[API Bypass] Error: ', error.message);
+    return 'error';
+  }
 };
 
 app.post('/api/validate', async (req, res) => {
