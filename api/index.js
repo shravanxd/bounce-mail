@@ -182,8 +182,38 @@ const checkEmailSMTP = async (email, mxRecord) => {
         if (data.is_catchall_email && data.is_catchall_email.value) return 'catch-all';
         return 'unknown';
       }
+    },
+    {
+      name: 'bouncify',
+      key: process.env.BOUNCIFY_API_KEY,
+      check: async (email, key) => {
+        const url = `https://api.bouncify.io/v1/verify?apikey=${key}&email=${email}`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`Bouncify HTTP ${res.status}`);
+        const data = await res.json();
+        if (data.success === false) throw new Error(data.message || 'Bouncify API error');
+        if (data.result === 'deliverable') return 'valid';
+        if (data.result === 'undeliverable') return 'invalid';
+        if (data.result === 'catch_all' || data.result === 'accept_all') return 'catch-all';
+        return 'unknown';
+      }
+    },
+    {
+      name: 'hunter',
+      key: process.env.HUNTER_API_KEY,
+      check: async (email, key) => {
+        const url = `https://api.hunter.io/v2/email-verifier?email=${email}&api_key=${key}`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`Hunter HTTP ${res.status}`);
+        const json = await res.json();
+        if (json.errors) throw new Error(json.errors[0]?.details || 'Hunter API error');
+        const status = json.data?.status;
+        if (status === 'valid') return 'valid';
+        if (status === 'invalid') return 'invalid';
+        if (status === 'accept_all') return 'catch-all';
+        return 'unknown';
+      }
     }
-    // Easy to add more APIs (Hunter, Kickbox, NeverBounce, etc.) right here!
   ];
 
   for (const provider of apiProviders) {
