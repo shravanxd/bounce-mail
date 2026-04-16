@@ -260,19 +260,24 @@ export default function App() {
                   placeholder={apiProvider === 'openai' ? 'sk-proj-...' : 'sk-ant-...'}
                   className="mc-input w-full px-4 py-3"
                 />
+                <div className="flex justify-between items-center mt-2">
                   <button
                     type="button"
-                    className="mc-button-diamond mt-2 w-full bg-[#444] text-[#FF5555] hover:bg-[#222] pixel-font text-xs"
+                    className="rounded px-4 py-2 bg-[#222] text-[#A0A0A0] border border-[#444] hover:bg-[#333] transition-all text-xs pixel-font shadow-sm"
+                    style={{ minWidth: 120 }}
                     onClick={() => {
                       setApiKey('');
                       localStorage.removeItem('bouncemail_llm_api_key');
                     }}
                   >
-                    CLEAR API KEY
+                    Clear API Key
                   </button>
-                  <div className="mt-2 text-[#A0A0A0] text-xs pixel-font text-shadow-sm">
-                    <b>NOTE:</b> Your API key is <u>never</u> sent to our server or stored anywhere except <b>your own browser</b>. Refreshing the page or pressing <b>CLEAR</b> will remove it instantly.
-                  </div>
+                </div>
+              </div>
+
+              <div className="mt-2 text-[#A0A0A0] text-xs pixel-font text-shadow-sm">
+                <b>NOTE:</b> Your API key is <u>never</u> sent to our server or stored anywhere except <b>your own browser</b>. Refreshing the page or pressing <b>Clear API Key</b> will remove it instantly.
+              </div>
               </div>
 
               <div className="pt-4">
