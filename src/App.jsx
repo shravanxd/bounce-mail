@@ -274,51 +274,47 @@ export default function App() {
                   </button>
                 </div>
               </div>
-
-              <div className="mt-2 text-[#A0A0A0] text-xs pixel-font text-shadow-sm">
-                <b>NOTE:</b> Your API key is <u>never</u> sent to our server or stored anywhere except <b>your own browser</b>. Refreshing the page or pressing <b>Clear API Key</b> will remove it instantly.
-              </div>
-              </div>
-
-              <div className="pt-4">
-                <button 
-                  onClick={async () => {
-                    setSetupLoading(true);
-                    setSetupMessage(null);
-                    try {
-                      const res = await fetch(`${API_BASE}/verify-key`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ apiProvider, apiKey })
-                      });
-                      const json = await res.json();
-                      if (res.ok) {
-                        setSetupMessage({ type: 'success', text: json.message });
-                        localStorage.setItem('bouncemail_llm_provider', apiProvider);
-                        localStorage.setItem('bouncemail_llm_api_key', apiKey);
-                      } else {
-                        setSetupMessage({ type: 'error', text: json.error || 'Verification failed.' });
-                      }
-                    } catch(err) {
-                      setSetupMessage({ type: 'error', text: 'Network Error: Could not verify key.' });
-                    }
-                    setSetupLoading(false);
-                  }}
-                  disabled={setupLoading}
-                  className="mc-button-diamond w-full"
-                >
-                  {setupLoading ? 'VERIFYING...' : 'SAVE & VERIFY CONF'}
-                </button>
-              </div>
-
-              {setupMessage && (
-                <div className={cn("p-4 mt-4 pixel-font text-sm text-center shadow-inner", 
-                  setupMessage.type === 'success' ? "bg-[#3D5C3D] text-[#55FF55] border-2 border-[inset] border-b-[#AAFFAA] border-r-[#AAFFAA] border-t-[#113311] border-l-[#113311]" : "bg-[#5C3D3D] text-[#FF5555] border-2 border-[inset] border-b-[#FFaaaa] border-r-[#FFaaaa] border-t-[#331111] border-l-[#331111]"
-                )}>
-                  {setupMessage.text}
-                </div>
-              )}
             </div>
+            <div className="mt-2 text-[#A0A0A0] text-xs pixel-font text-shadow-sm px-6">
+              <b>NOTE:</b> Your API key is <u>never</u> sent to our server or stored anywhere except <b>your own browser</b>. Refreshing the page or pressing <b>Clear API Key</b> will remove it instantly.
+            </div>
+            <div className="pt-4 px-6">
+              <button 
+                onClick={async () => {
+                  setSetupLoading(true);
+                  setSetupMessage(null);
+                  try {
+                    const res = await fetch(`${API_BASE}/verify-key`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ apiProvider, apiKey })
+                    });
+                    const json = await res.json();
+                    if (res.ok) {
+                      setSetupMessage({ type: 'success', text: json.message });
+                      localStorage.setItem('bouncemail_llm_provider', apiProvider);
+                      localStorage.setItem('bouncemail_llm_api_key', apiKey);
+                    } else {
+                      setSetupMessage({ type: 'error', text: json.error || 'Verification failed.' });
+                    }
+                  } catch(err) {
+                    setSetupMessage({ type: 'error', text: 'Network Error: Could not verify key.' });
+                  }
+                  setSetupLoading(false);
+                }}
+                disabled={setupLoading}
+                className="mc-button-diamond w-full"
+              >
+                {setupLoading ? 'VERIFYING...' : 'SAVE & VERIFY CONF'}
+              </button>
+            </div>
+            {setupMessage && (
+              <div className={cn("p-4 mt-4 pixel-font text-sm text-center shadow-inner", 
+                setupMessage.type === 'success' ? "bg-[#3D5C3D] text-[#55FF55] border-2 border-[inset] border-b-[#AAFFAA] border-r-[#AAFFAA] border-t-[#113311] border-l-[#113311]" : "bg-[#5C3D3D] text-[#FF5555] border-2 border-[inset] border-b-[#FFaaaa] border-r-[#FFaaaa] border-t-[#331111] border-l-[#331111]"
+              )}>
+                {setupMessage.text}
+              </div>
+            )}
           </section>
         )}
 
