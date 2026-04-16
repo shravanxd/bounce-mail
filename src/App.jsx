@@ -232,90 +232,91 @@ export default function App() {
 
         {/* Setup Section */}
         {mode === 'setup' && (
-          <section className="mc-panel shadow-2xl relative z-10 w-full max-w-2xl mx-auto">
-            <div className="p-4 border-b-4 border-b-[#151515] bg-[#3D3D3D] flex justify-between items-center">
-              <span className="pixel-font text-sm text-white">
-                LLM Configuration
-              </span>
-            </div>
-            <div className="p-6 bg-[#2D2D2D] space-y-6">
-              <div>
-                <label className="block text-[#A0A0A0] pixel-font text-xs mb-2 text-shadow-sm">Provider</label>
-                <select 
-                  value={apiProvider}
-                  onChange={(e) => setApiProvider(e.target.value)}
-                  className="mc-input w-full appearance-none px-4 py-3"
-                >
-                  <option value="anthropic">Anthropic (Claude)</option>
-                  <option value="openai">OpenAI (GPT-4o)</option>
-                </select>
+          <>
+            <section className="mc-panel shadow-2xl relative z-10 w-full max-w-2xl mx-auto">
+              <div className="p-4 border-b-4 border-b-[#151515] bg-[#3D3D3D] flex justify-between items-center">
+                <span className="pixel-font text-sm text-white">
+                  LLM Configuration
+                </span>
               </div>
-
-              <div>
-                <label className="block text-[#A0A0A0] pixel-font text-xs mb-2 text-shadow-sm">API Key</label>
-                <input 
-                  type="password"
-                  value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
-                  placeholder={apiProvider === 'openai' ? 'sk-proj-...' : 'sk-ant-...'}
-                  className="mc-input w-full px-4 py-3"
-                />
-                <div className="flex justify-between items-center mt-2">
-                  <button
-                    type="button"
-                    className="rounded px-4 py-2 bg-[#222] text-[#A0A0A0] border border-[#444] hover:bg-[#333] transition-all text-xs pixel-font shadow-sm"
-                    style={{ minWidth: 120 }}
-                    onClick={() => {
-                      setApiKey('');
-                      localStorage.removeItem('bouncemail_llm_api_key');
-                    }}
+              <div className="p-6 bg-[#2D2D2D] space-y-6">
+                <div>
+                  <label className="block text-[#A0A0A0] pixel-font text-xs mb-2 text-shadow-sm">Provider</label>
+                  <select 
+                    value={apiProvider}
+                    onChange={(e) => setApiProvider(e.target.value)}
+                    className="mc-input w-full appearance-none px-4 py-3"
                   >
-                    Clear API Key
-                  </button>
+                    <option value="anthropic">Anthropic (Claude)</option>
+                    <option value="openai">OpenAI (GPT-4o)</option>
+                  </select>
                 </div>
+
+                <div>
+                  <label className="block text-[#A0A0A0] pixel-font text-xs mb-2 text-shadow-sm">API Key</label>
+                  <div className="flex gap-2">
+                    <input 
+                      type="password"
+                      value={apiKey}
+                      onChange={(e) => setApiKey(e.target.value)}
+                      placeholder={apiProvider === 'openai' ? 'sk-proj-...' : 'sk-ant-...'}
+                      className="mc-input w-full px-4 py-3"
+                    />
+                    <button
+                      type="button"
+                      className="rounded px-4 py-2 bg-[#222] text-[#A0A0A0] border border-[#444] hover:bg-[#333] transition-all text-xs pixel-font shadow-sm"
+                      style={{ minWidth: 120 }}
+                      onClick={() => {
+                        setApiKey('');
+                        localStorage.removeItem('bouncemail_llm_api_key');
+                      }}
+                    >
+                      Clear API Key
+                    </button>
+                    <button 
+                      onClick={async () => {
+                        setSetupLoading(true);
+                        setSetupMessage(null);
+                        try {
+                          const res = await fetch(`${API_BASE}/verify-key`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ apiProvider, apiKey })
+                          });
+                          const json = await res.json();
+                          if (res.ok) {
+                            setSetupMessage({ type: 'success', text: json.message });
+                            localStorage.setItem('bouncemail_llm_provider', apiProvider);
+                            localStorage.setItem('bouncemail_llm_api_key', apiKey);
+                          } else {
+                            setSetupMessage({ type: 'error', text: json.error || 'Verification failed.' });
+                          }
+                        } catch(err) {
+                          setSetupMessage({ type: 'error', text: 'Network Error: Could not verify key.' });
+                        }
+                        setSetupLoading(false);
+                      }}
+                      disabled={setupLoading}
+                      className="mc-button-diamond text-xs px-4 py-2"
+                      style={{ minWidth: 120 }}
+                    >
+                      {setupLoading ? 'VERIFYING...' : 'Save & Verify'}
+                    </button>
+                  </div>
+                </div>
+                {setupMessage && (
+                  <div className={cn("p-4 mt-4 pixel-font text-sm text-center shadow-inner", 
+                    setupMessage.type === 'success' ? "bg-[#3D5C3D] text-[#55FF55] border-2 border-[inset] border-b-[#AAFFAA] border-r-[#AAFFAA] border-t-[#113311] border-l-[#113311]" : "bg-[#5C3D3D] text-[#FF5555] border-2 border-[inset] border-b-[#FFaaaa] border-r-[#FFaaaa] border-t-[#331111] border-l-[#331111]"
+                  )}>
+                    {setupMessage.text}
+                  </div>
+                )}
               </div>
-            </div>
-            <div className="mt-2 text-[#A0A0A0] text-xs pixel-font text-shadow-sm px-6">
+            </section>
+            <div className="mt-4 text-[#A0A0A0] text-xs pixel-font text-shadow-sm w-full max-w-2xl mx-auto text-center">
               <b>NOTE:</b> Your API key is <u>never</u> sent to our server or stored anywhere except <b>your own browser</b>. Refreshing the page or pressing <b>Clear API Key</b> will remove it instantly.
             </div>
-            <div className="pt-4 px-6">
-              <button 
-                onClick={async () => {
-                  setSetupLoading(true);
-                  setSetupMessage(null);
-                  try {
-                    const res = await fetch(`${API_BASE}/verify-key`, {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ apiProvider, apiKey })
-                    });
-                    const json = await res.json();
-                    if (res.ok) {
-                      setSetupMessage({ type: 'success', text: json.message });
-                      localStorage.setItem('bouncemail_llm_provider', apiProvider);
-                      localStorage.setItem('bouncemail_llm_api_key', apiKey);
-                    } else {
-                      setSetupMessage({ type: 'error', text: json.error || 'Verification failed.' });
-                    }
-                  } catch(err) {
-                    setSetupMessage({ type: 'error', text: 'Network Error: Could not verify key.' });
-                  }
-                  setSetupLoading(false);
-                }}
-                disabled={setupLoading}
-                className="mc-button-diamond w-full"
-              >
-                {setupLoading ? 'VERIFYING...' : 'SAVE & VERIFY CONF'}
-              </button>
-            </div>
-            {setupMessage && (
-              <div className={cn("p-4 mt-4 pixel-font text-sm text-center shadow-inner", 
-                setupMessage.type === 'success' ? "bg-[#3D5C3D] text-[#55FF55] border-2 border-[inset] border-b-[#AAFFAA] border-r-[#AAFFAA] border-t-[#113311] border-l-[#113311]" : "bg-[#5C3D3D] text-[#FF5555] border-2 border-[inset] border-b-[#FFaaaa] border-r-[#FFaaaa] border-t-[#331111] border-l-[#331111]"
-              )}>
-                {setupMessage.text}
-              </div>
-            )}
-          </section>
+          </>
         )}
 
         {/* Input Section */}
