@@ -254,7 +254,7 @@ export default function App() {
 
                 <div>
                   <label className="block text-[#A0A0A0] pixel-font text-xs mb-2 text-shadow-sm">API Key</label>
-                  <div className="flex gap-2">
+                  <div className="flex items-center gap-2">
                     <input 
                       type="password"
                       value={apiKey}
@@ -264,15 +264,17 @@ export default function App() {
                     />
                     <button
                       type="button"
-                      className="rounded px-4 py-2 bg-[#222] text-[#A0A0A0] border border-[#444] hover:bg-[#333] transition-all text-xs pixel-font shadow-sm"
-                      style={{ minWidth: 120 }}
+                      className="ml-2 text-[#888] hover:text-[#FF5555] underline text-xs pixel-font bg-transparent border-0 p-0"
+                      style={{ minWidth: 0 }}
                       onClick={() => {
                         setApiKey('');
                         localStorage.removeItem('bouncemail_llm_api_key');
                       }}
                     >
-                      Clear API Key
+                      Clear
                     </button>
+                  </div>
+                  <div className="pt-4">
                     <button 
                       onClick={async () => {
                         setSetupLoading(true);
@@ -297,10 +299,9 @@ export default function App() {
                         setSetupLoading(false);
                       }}
                       disabled={setupLoading}
-                      className="mc-button-diamond text-xs px-4 py-2"
-                      style={{ minWidth: 120 }}
+                      className="mc-button-diamond w-full"
                     >
-                      {setupLoading ? 'VERIFYING...' : 'Save & Verify'}
+                      {setupLoading ? 'VERIFYING...' : 'SAVE & VERIFY CONF'}
                     </button>
                   </div>
                 </div>
@@ -314,7 +315,7 @@ export default function App() {
               </div>
             </section>
             <div className="mt-4 text-[#A0A0A0] text-xs pixel-font text-shadow-sm w-full max-w-2xl mx-auto text-center">
-              <b>NOTE:</b> Your API key is <u>never</u> sent to our server or stored anywhere except <b>your own browser</b>. Refreshing the page or pressing <b>Clear API Key</b> will remove it instantly.
+              <b>NOTE:</b> Your API key is <u>never</u> sent to our server or stored anywhere except <b>your own browser</b>. Refreshing the page or pressing <b>Clear</b> will remove it instantly.
             </div>
           </>
         )}
