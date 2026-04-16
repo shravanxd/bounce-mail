@@ -151,21 +151,49 @@ const generatePermutations = (founder, domain) => {
 
 // Check if a specific email is valid via SMTP
 const checkEmailSMTP = async (email, mxRecord) => {
-  // Option 1: Temporary API Bypass over HTTPS
-  const apiKey = process.env.EMAIL_VALIDATION_API_KEY;
-  
-  if (apiKey) {
+  // Option 1: Multi-API Fallback Proxy Server (Pool of free tiers)
+  const apiProviders = [
+    {
+      name: 'zerobounce',
+      key: process.env.ZEROBOUNCE_API_KEY,
+      check: async (email, key) => {
+        const url = `https://api.zerobounce.net/v2/validate?api_key=${key}&email=${email}`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`ZeroBounce HTTP ${res.status}`);
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+        if (data.status === 'valid') return 'valid';
+        if (data.status === 'invalid') return 'invalid';
+        if (data.status === 'catch-all') return 'catch-all';
+        return 'unknown';
+      }
+    },
+    {
+      name: 'abstract',
+      key: process.env.ABSTRACT_API_KEY || process.env.EMAIL_VALIDATION_API_KEY,
+      check: async (email, key) => {
+        const url = `https://emailvalidation.abstractapi.com/v1/?api_key=${key}&email=${email}`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`Abstract HTTP ${res.status}`);
+        const data = await res.json();
+        if (data.error) throw new Error(data.error.message || 'Abstract API error');
+        if (data.deliverability === 'DELIVERABLE') return 'valid';
+        if (data.deliverability === 'UNDELIVERABLE') return 'invalid';
+        if (data.is_catchall_email && data.is_catchall_email.value) return 'catch-all';
+        return 'unknown';
+      }
+    }
+    // Easy to add more APIs (Hunter, Kickbox, NeverBounce, etc.) right here!
+  ];
+
+  for (const provider of apiProviders) {
+    if (!provider.key) continue;
     try {
-      const url = `https://emailvalidation.abstractapi.com/v1/?api_key=${apiKey}&email=${email}`;
-      const response = await fetch(url);
-      const data = await response.json();
-      if (data.deliverability === 'DELIVERABLE') return 'valid';
-      if (data.deliverability === 'UNDELIVERABLE') return 'invalid';
-      if (data.is_catchall_email && data.is_catchall_email.value) return 'catch-all';
-      return 'unknown';
-    } catch (error) {
-      console.error('[API Bypass] Error: ', error.message);
-      return 'error';
+      const result = await provider.check(email, provider.key);
+      return result;
+    } catch (err) {
+      console.error(`[API Proxy - ${provider.name}] failed: ${err.message}. Trying next API in pool...`);
+      continue; // Move to the next API in the array
     }
   }
 
